@@ -125,6 +125,10 @@ func run(args []string, stdout, stderr io.Writer) int {
 				Name:  "experimental-all-packages",
 				Usage: "when json output is selected, prints all packages",
 			},
+			&cli.BoolFlag{
+				Name:  "experimental-licenses",
+				Usage: "report on licenses",
+			},
 		},
 		ArgsUsage: "[directory1 directory2...]",
 		Action: func(context *cli.Context) error {
@@ -171,6 +175,7 @@ func run(args []string, stdout, stderr io.Writer) int {
 					CompareLocally: context.Bool("experimental-local-db"),
 					CompareOffline: context.Bool("experimental-offline"),
 					AllPackages:    context.Bool("experimental-all-packages"),
+					Licenses:       context.Bool("experimental-licenses"),
 				},
 			}, r)
 

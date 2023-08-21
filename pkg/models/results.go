@@ -60,6 +60,7 @@ type PackageVulns struct {
 	Package         PackageInfo     `json:"package"`
 	Vulnerabilities []Vulnerability `json:"vulnerabilities"`
 	Groups          []GroupInfo     `json:"groups"`
+	Licenses        Licenses        `json:"licenses,omitempty"`
 }
 
 type GroupInfo struct {
