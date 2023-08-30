@@ -145,10 +145,23 @@ func TestRun(t *testing.T) {
 			wantStdout: `
 				Scanning dir ./fixtures/locks-many/composer.lock
 				Scanned %%/fixtures/locks-many/composer.lock file and found 1 package
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
+		// one specific supported lockfile with licenses flag
+		{
+			name:         "",
+			args:         []string{"", "--experimental-licenses", "./fixtures/locks-many/composer.lock"},
+			wantExitCode: 0,
+			wantStdout: `
+				Scanning dir ./fixtures/locks-many/composer.lock
+				Scanned %%/fixtures/locks-many/composer.lock file and found 1 package
+				No issues found
+			`,
+			wantStderr: "",
+		},
+
 		// one specific supported sbom with vulns
 		{
 			name:         "",
@@ -205,7 +218,7 @@ func TestRun(t *testing.T) {
 				Loaded filter from: %%/fixtures/locks-many/osv-scanner.toml
 				GHSA-whgm-jr23-g3j9 has been filtered out because: Test manifest file
 				Filtered 1 vulnerability from output
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -231,7 +244,7 @@ func TestRun(t *testing.T) {
 			wantStdout: `
 				Scanning dir ./fixtures/locks-one-with-nested
 				Scanned %%/fixtures/locks-one-with-nested/yarn.lock file and found 1 package
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -244,7 +257,7 @@ func TestRun(t *testing.T) {
 				Scanning dir ./fixtures/locks-one-with-nested
 				Scanned %%/fixtures/locks-one-with-nested/nested/composer.lock file and found 1 package
 				Scanned %%/fixtures/locks-one-with-nested/yarn.lock file and found 1 package
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -257,7 +270,7 @@ func TestRun(t *testing.T) {
 				Scanning dir ./fixtures/locks-gitignore
 				Scanned %%/fixtures/locks-gitignore/Gemfile.lock file and found 1 package
 				Scanned %%/fixtures/locks-gitignore/subdir/yarn.lock file and found 1 package
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -276,7 +289,7 @@ func TestRun(t *testing.T) {
 				Scanned %%/fixtures/locks-gitignore/subdir/composer.lock file and found 1 package
 				Scanned %%/fixtures/locks-gitignore/subdir/yarn.lock file and found 1 package
 				Scanned %%/fixtures/locks-gitignore/yarn.lock file and found 1 package
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -412,7 +425,7 @@ func TestRun(t *testing.T) {
 			wantStdout: `
 				Scanning dir ./fixtures/locks-many/composer.lock
 				Scanned %%/fixtures/locks-many/composer.lock file and found 1 package
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -452,7 +465,7 @@ func TestRun_LockfileWithExplicitParseAs(t *testing.T) {
 			wantExitCode: 0,
 			wantStdout: `
 				Scanned %%/fixtures/locks-many/composer.lock file and found 1 package
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -593,7 +606,7 @@ func TestRun_LockfileWithExplicitParseAs(t *testing.T) {
 			wantExitCode: 0,
 			wantStdout: `
 				Scanned %%/fixtures/locks-many/installed file as a apk-installed and found 1 package
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -608,7 +621,7 @@ func TestRun_LockfileWithExplicitParseAs(t *testing.T) {
 			wantExitCode: 0,
 			wantStdout: `
 				Scanned %%/fixtures/locks-many/status file as a dpkg-status and found 1 package
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -636,7 +649,7 @@ func TestRun_LocalDatabases(t *testing.T) {
 				Scanning dir ./fixtures/locks-many/composer.lock
 				Scanned %%/fixtures/locks-many/composer.lock file and found 1 package
 				Loaded Packagist local db from %%/osv-scanner/Packagist/all.zip
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -695,7 +708,7 @@ func TestRun_LocalDatabases(t *testing.T) {
 				Loaded filter from: %%/fixtures/locks-many/osv-scanner.toml
 				GHSA-whgm-jr23-g3j9 has been filtered out because: Test manifest file
 				Filtered 1 vulnerability from output
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -724,7 +737,7 @@ func TestRun_LocalDatabases(t *testing.T) {
 				Scanning dir ./fixtures/locks-one-with-nested
 				Scanned %%/fixtures/locks-one-with-nested/yarn.lock file and found 1 package
 				Loaded npm local db from %%/osv-scanner/npm/all.zip
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -739,7 +752,7 @@ func TestRun_LocalDatabases(t *testing.T) {
 				Scanned %%/fixtures/locks-one-with-nested/yarn.lock file and found 1 package
 				Loaded Packagist local db from %%/osv-scanner/Packagist/all.zip
 				Loaded npm local db from %%/osv-scanner/npm/all.zip
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -754,7 +767,7 @@ func TestRun_LocalDatabases(t *testing.T) {
 				Scanned %%/fixtures/locks-gitignore/subdir/yarn.lock file and found 1 package
 				Loaded RubyGems local db from %%/osv-scanner/RubyGems/all.zip
 				Loaded npm local db from %%/osv-scanner/npm/all.zip
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -776,7 +789,7 @@ func TestRun_LocalDatabases(t *testing.T) {
 				Loaded RubyGems local db from %%/osv-scanner/RubyGems/all.zip
 				Loaded Packagist local db from %%/osv-scanner/Packagist/all.zip
 				Loaded npm local db from %%/osv-scanner/npm/all.zip
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
@@ -820,7 +833,7 @@ func TestRun_LocalDatabases(t *testing.T) {
 				Scanning dir ./fixtures/locks-many/composer.lock
 				Scanned %%/fixtures/locks-many/composer.lock file and found 1 package
 				Loaded Packagist local db from %%/osv-scanner/Packagist/all.zip
-				No vulnerabilities found
+				No issues found
 			`,
 			wantStderr: "",
 		},
