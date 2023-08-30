@@ -63,7 +63,64 @@ var VulnerabilitiesFoundErr = errors.New("vulnerabilities found")
 var OnlyUncalledVulnerabilitiesFoundErr = errors.New("only uncalled vulnerabilities found")
 
 //nolint:errname,stylecheck // Would require version bump to change
-var LicenseViolationErr = errors.New("license violation found")
+var LicenseViolationsErr = errors.New("license violations found")
+
+//nolint:errname,stylecheck // Would require version bump to change
+var VulnerabilitiesFoundAndLicenseViolationsErr = errors.New("vulnerabilities found and license violations found")
+
+var OnlyUncalledVulnerabilitiesFoundAndLicenseViolationsErr = errors.New("only uncalled vulnerabilities found and license violations found")
+
+// ResultError holds a result-related error.
+type ResultError struct {
+	VulnerabilitiesFound             bool
+	OnlyUncalledVulnerabilitiesFound bool
+	LicenseViolation                 bool
+}
+
+// Code produces the exit code for the ResultError. 7 bits are reserved for
+// ResultErrors and each field in the ResultError struct is allocated one bit.
+func (s ResultError) Code() int {
+	code := 0
+	if s.VulnerabilitiesFound && !s.OnlyUncalledVulnerabilitiesFound {
+		code |= 1
+	}
+	if s.OnlyUncalledVulnerabilitiesFound {
+		code |= (1 << 1)
+	}
+	if s.LicenseViolation {
+		code |= (1 << 2)
+	}
+	return code
+}
+
+func (s ResultError) Error() string {
+	return s.FindError().Error()
+}
+
+func (s ResultError) FindError() error {
+	switch {
+	case !s.VulnerabilitiesFound && !s.OnlyUncalledVulnerabilitiesFound && !s.LicenseViolation:
+		// There is no error.
+		return nil
+	case s.VulnerabilitiesFound && !s.OnlyUncalledVulnerabilitiesFound && !s.LicenseViolation:
+		return VulnerabilitiesFoundErr
+	case !s.VulnerabilitiesFound && s.OnlyUncalledVulnerabilitiesFound && !s.LicenseViolation:
+		// Impossible state.
+		return nil
+	case s.VulnerabilitiesFound && s.OnlyUncalledVulnerabilitiesFound && !s.LicenseViolation:
+		return OnlyUncalledVulnerabilitiesFoundErr
+	case !s.VulnerabilitiesFound && !s.OnlyUncalledVulnerabilitiesFound && s.LicenseViolation:
+		return LicenseViolationsErr
+	case s.VulnerabilitiesFound && !s.OnlyUncalledVulnerabilitiesFound && s.LicenseViolation:
+		return VulnerabilitiesFoundAndLicenseViolationsErr
+	case !s.VulnerabilitiesFound && s.OnlyUncalledVulnerabilitiesFound && s.LicenseViolation:
+		// Impossible state.
+		return nil
+	case s.VulnerabilitiesFound && s.OnlyUncalledVulnerabilitiesFound && s.LicenseViolation:
+		return OnlyUncalledVulnerabilitiesFoundAndLicenseViolationsErr
+	}
+	return nil
+}
 
 // scanDir walks through the given directory to try to find any relevant files
 // These include:
@@ -633,18 +690,28 @@ func DoScan(actions ScannerActions, r reporter.Reporter) (models.VulnerabilityRe
 		))
 	}
 
-	// if vulnerability exists it should return error
 	if len(results.Results) > 0 {
+		// Determine the correct error to return.
+		// TODO: in the next breaking release of osv-scanner, consider returning a ScanError instead of an error.
+		var vuln bool
+		onlyUncalledVuln := true
+		var licenseViolation bool
 		for _, vf := range results.Flatten() {
-			if vf.GroupInfo.IsCalled() {
-				return results, VulnerabilitiesFoundErr
+			if vf.Vulnerability.ID != "" {
+				vuln = true
+				if vf.GroupInfo.IsCalled() {
+					onlyUncalledVuln = false
+				}
 			}
 			if len(vf.LicenseViolations) > 0 {
-				return results, LicenseViolationErr
+				licenseViolation = true
 			}
 		}
-		// Otherwise return OnlyUncalledVulnerabilitiesFoundErr
-		return results, OnlyUncalledVulnerabilitiesFoundErr
+		return results, ResultError{
+			VulnerabilitiesFound:             vuln,
+			OnlyUncalledVulnerabilitiesFound: vuln && onlyUncalledVuln,
+			LicenseViolation:                 licenseViolation,
+		}
 	}
 
 	return results, nil
